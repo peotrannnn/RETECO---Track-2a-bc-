@@ -1,0 +1,21 @@
+[project]
+name = "reteco"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gensim>=4.4",
+    "huggingface-hub>=0.24",
+    "pyarrow>=15",
+    "pyserini>=2.4",
+    "pytrec-eval-terrier>=0.5.11",
+    "tqdm>=4.70.1",
+]
+
+[project.scripts]
+reteco = "reteco:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
