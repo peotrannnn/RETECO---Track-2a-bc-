@@ -1,0 +1,190 @@
+================================================================================
+LOG QUYẾT ĐỊNH KIẾN TRÚC CHUNKING (ADR) - RETECO TRACK 2 (v3)
+DOMAIN: DRONES   |   Thời điểm: 2026-11-14 12:22:41
+================================================================================
+
+1. BỐI CẢNH DỮ LIỆU (đo trên TOÀN BỘ corpus)
+--------------------------------------------------------------------------------
+- Số tài liệu: 16,381 | trùng lặp: 0.0% | rỗng: 0
+- Độ dài ký tự: min=30 p25=240 median=537 mean=772.0 p75=1113 p90=1911 p95=2098 p99=2754 max=13156
+- Tỷ lệ tài liệu <= 650 / 800 / 1500 / 3000 ký tự: 56.71% / 64.01% / 83.4% / 99.98%
+- Tài liệu ước tính vượt 512 token (sẽ bị embedding cắt cụt nếu không chia): 3.0%
+- Cấu trúc: bullet 0.77% | nhiều dòng 6.72% | header 0.02%
+- Chất lượng thô: bắt đầu bằng chữ thường 1.18% | thiếu dấu câu cuối 27.04% | mở đầu bằng đại từ 3.72%
+
+2. PHƯƠNG PHÁP & GIỚI HẠN (đọc trước khi tin kết luận)
+--------------------------------------------------------------------------------
+- Chất lượng chunk: định vị từng chunk trong tài liệu gốc rồi xét ký tự liền trước/sau để biết chunk có cắt giữa câu không (không đoán theo chữ hoa/thường).
+- Đại từ mồ côi được báo cáo 2 mức: 'raw' (nhìn phần văn bản gốc) và 'unresolved' (sau khi trừ các chunk có prefix chủ đề >= 3 từ). Việc prefix thật sự giải quyết tham chiếu chỉ là HEURISTIC.
+- Điểm tổng hợp (CÓ retrieval) = 0.45*nDCG_eff(norm) + 0.20*Recall(norm) + 0.25*Quality(norm) + 0.10*Cost(log_norm); sau đó NHÂN với (1 - truncation_penalty).
+- Điểm tổng hợp (KHÔNG retrieval) = 0.80*Quality(norm) + 0.20*Cost(log_norm); sau đó NHÂN với (1 - truncation_penalty).
+- nDCG_eff = nDCG_single + max(0, nDCG_history - nDCG_random_padded): đã trừ thiên lệch độ dài query (baseline random_padded cùng độ dài).
+- Truncation penalty: mượt tuyến tính, 0% tại ot<=5%, 40% tại ot>=25%.
+- Cost = 1 / (1 + ln(expansion_ratio)).
+- Chuẩn hóa min-max TRONG từng domain: composite chỉ có nghĩa so sánh nội domain, KHÔNG so sánh liên domain.
+- Số token là ƯỚC LƯỢNG (từ x 1.35), không phải token thật của model embedding.
+- Retrieval: BM25 (từ vựng) trên corpus con = 48 gold docs + 9967 tài liệu nhiễu; 38 query. Số tuyệt đối bị thổi phồng so với corpus đầy đủ; chỉ nên so SÁNH TƯƠNG ĐỐI giữa các chiến lược. Chưa đo dense retriever / reranker / chất lượng sinh câu trả lời của LLM.
+
+3. BẢNG XẾP HẠNG TỔNG HỢP
+--------------------------------------------------------------------------------
+#1  6_Whole_Document               composite=0.9334 | base=0.9334 | trunc_pen=0.000 | quality=98.22 | nở=1.0x | nDCG_eff=0.2871 (single=0.1747 hist=0.2514 rand=0.1390 sem_gain=+0.1124)
+#2  3_Sentence_Boundary            composite=0.7788 | base=0.7788 | trunc_pen=0.000 | quality=98.56 | nở=1.48x | nDCG_eff=0.2671 (single=0.1794 hist=0.2486 rand=0.1609 sem_gain=+0.0877)
+#3  3b_Sentence_80w                composite=0.7392 | base=0.7392 | trunc_pen=0.000 | quality=97.16 | nở=2.38x | nDCG_eff=0.2546 (single=0.1657 hist=0.2380 rand=0.1491 sem_gain=+0.0889)
+#4  4b_Recursive_450               composite=0.6896 | base=0.6896 | trunc_pen=0.000 | quality=96.35 | nở=2.3x | nDCG_eff=0.2697 (single=0.1765 hist=0.2476 rand=0.1544 sem_gain=+0.0932)
+#5  4c_Recursive_1000              composite=0.6628 | base=0.6628 | trunc_pen=0.000 | quality=98.57 | nở=1.31x | nDCG_eff=0.2404 (single=0.1605 hist=0.2240 rand=0.1441 sem_gain=+0.0799)
+#6  3c_Sentence_220w               composite=0.6575 | base=0.6575 | trunc_pen=0.000 | quality=99.09 | nở=1.18x | nDCG_eff=0.2425 (single=0.1569 hist=0.2243 rand=0.1387 sem_gain=+0.0856)
+#7  1c_Fixed_Char_900              composite=0.6293 | base=0.6293 | trunc_pen=0.000 | quality=86.22 | nở=1.45x | nDCG_eff=0.2568 (single=0.1743 hist=0.2385 rand=0.1560 sem_gain=+0.0825)
+#8  4_Recursive_Markdown           composite=0.6014 | base=0.6014 | trunc_pen=0.000 | quality=97.38 | nở=1.7x | nDCG_eff=0.2384 (single=0.1547 hist=0.2221 rand=0.1384 sem_gain=+0.0837)
+#9  5e_Adaptive_Hybrid             composite=0.5763 | base=0.5763 | trunc_pen=0.000 | quality=98.64 | nở=1.49x | nDCG_eff=0.2366 (single=0.1548 hist=0.2273 rand=0.1455 sem_gain=+0.0818)
+#10 7_Parent_Child                 composite=0.5336 | base=0.5336 | trunc_pen=0.000 | quality=96.81 | nở=2.6x | nDCG_eff=0.2314 (single=0.1530 hist=0.2147 rand=0.1363 sem_gain=+0.0784)
+#11 8_Sentence_Window              composite=0.5085 | base=0.5085 | trunc_pen=0.000 | quality=93.27 | nở=3.24x | nDCG_eff=0.2354 (single=0.1506 hist=0.2100 rand=0.1252 sem_gain=+0.0848)
+#12 8b_Sentence_Window_6_3         composite=0.5038 | base=0.5038 | trunc_pen=0.000 | quality=95.08 | nở=2.25x | nDCG_eff=0.2302 (single=0.1501 hist=0.2130 rand=0.1329 sem_gain=+0.0801)
+#13 5c_Semantic_thr500_max400      composite=0.4884 | base=0.4884 | trunc_pen=0.000 | quality=97.21 | nở=2.42x | nDCG_eff=0.2292 (single=0.1317 hist=0.2170 rand=0.1195 sem_gain=+0.0975)
+#14 4d_Recursive_250               composite=0.4816 | base=0.4816 | trunc_pen=0.000 | quality=93.47 | nở=3.98x | nDCG_eff=0.2427 (single=0.1355 hist=0.2251 rand=0.1179 sem_gain=+0.1072)
+#15 2_Fixed_Word                   composite=0.4745 | base=0.4745 | trunc_pen=0.000 | quality=83.42 | nở=1.61x | nDCG_eff=0.2464 (single=0.1599 hist=0.2370 rand=0.1505 sem_gain=+0.0865)
+#16 9_TextTiling_Semantic          composite=0.4375 | base=0.4375 | trunc_pen=0.000 | quality=93.29 | nở=2.11x | nDCG_eff=0.2272 (single=0.1386 hist=0.2199 rand=0.1313 sem_gain=+0.0886)
+#17 5b_Semantic_thr1200_max900     composite=0.4350 | base=0.4350 | trunc_pen=0.000 | quality=98.92 | nở=1.34x | nDCG_eff=0.2171 (single=0.1331 hist=0.2153 rand=0.1313 sem_gain=+0.0840)
+#18 5d_Semantic_prefix_all         composite=0.3593 | base=0.3593 | trunc_pen=0.000 | quality=98.18 | nở=1.67x | nDCG_eff=0.2133 (single=0.1333 hist=0.2059 rand=0.1259 sem_gain=+0.0800)
+#19 1_Fixed_Char                   composite=0.3410 | base=0.3410 | trunc_pen=0.000 | quality=75.99 | nở=2.1x | nDCG_eff=0.2258 (single=0.1436 hist=0.2080 rand=0.1258 sem_gain=+0.0822)
+#20 5_Semantic_Context_Injected    composite=0.2842 | base=0.2842 | trunc_pen=0.000 | quality=98.18 | nở=1.67x | nDCG_eff=0.1985 (single=0.1333 hist=0.2059 rand=0.1407 sem_gain=+0.0652)
+#21 1b_Fixed_Char_300              composite=0.2119 | base=0.2119 | trunc_pen=0.000 | quality=68.37 | nở=3.14x | nDCG_eff=0.2383 (single=0.1448 hist=0.2098 rand=0.1163 sem_gain=+0.0935)
+
+4. PHÂN TÍCH TỪNG CHIẾN LƯỢC CHÍNH (so với chiến lược được chọn; nếu người thắng là biến thể sweep thì được thêm vào cuối)
+--------------------------------------------------------------------------------
+[1_Fixed_Char]  params: size=500 overlap=50
+  KẾT LUẬN: KHÔNG CHỌN (kém 0.5924 điểm composite)
+  Đo được: quality=75.99 | đứt đầu=51.28% | đứt đuôi=50.97% | đại từ mồ côi raw/unresolved=0.95%/0.95% | tiêu đề mồ côi=0.12% | quá ngắn=2.38% | >512 token=0.0% | nở=2.1x | tài liệu bị chia=50.6%
+  Retrieval: nDCG_eff=0.2258 (single=0.1436 hist=0.2080 rand=0.1258) | semantic_gain=+0.0822
+           : Recall@10 single/history=0.2526/0.3323 | MRR@10 single/history=0.1439/0.2522 | vocab_ok=True
+  Điểm yếu đo được so với chiến lược chọn:
+    - tỷ lệ đứt đầu câu: 51.28% (chiến lược chọn: 0.0%)
+    - tỷ lệ đứt đuôi câu: 50.97% (chiến lược chọn: 0.0%)
+    - điểm chất lượng ngữ nghĩa TB: 75.99 (chiến lược chọn: 98.22)
+    - chi phí index: nở 2.1x chunk/tài liệu (chiến lược chọn: 1.0x)
+    - nDCG_eff: 0.2258 (chiến lược chọn: 0.2871)
+  Điểm mạnh đo được so với chiến lược chọn:
+    + chunk vượt giới hạn token embedding: 0.0% (chiến lược chọn: 2.65%)
+  Lý thuyết (không phải số đo): Cắt theo ký tự thô: có thể chẻ đôi một từ (vd 'quadcopter' -> 'quad'+'copter'), BM25 mất từ khóa, tokenizer sinh sub-token rác, mệnh đề kỹ thuật bị tách đôi.
+
+[2_Fixed_Word]  params: words=120 overlap=20
+  KẾT LUẬN: KHÔNG CHỌN (kém 0.4589 điểm composite)
+  Đo được: quality=83.42 | đứt đầu=35.85% | đứt đuôi=35.57% | đại từ mồ côi raw/unresolved=1.12%/1.12% | tiêu đề mồ côi=0.0% | quá ngắn=0.0% | >512 token=0.0% | nở=1.61x | tài liệu bị chia=35.75%
+  Retrieval: nDCG_eff=0.2464 (single=0.1599 hist=0.2370 rand=0.1505) | semantic_gain=+0.0865
+           : Recall@10 single/history=0.2123/0.3441 | MRR@10 single/history=0.1913/0.3050 | vocab_ok=True
+  Điểm yếu đo được so với chiến lược chọn:
+    - tỷ lệ đứt đầu câu: 35.85% (chiến lược chọn: 0.0%)
+    - tỷ lệ đứt đuôi câu: 35.57% (chiến lược chọn: 0.0%)
+    - điểm chất lượng ngữ nghĩa TB: 83.42 (chiến lược chọn: 98.22)
+    - chi phí index: nở 1.61x chunk/tài liệu (chiến lược chọn: 1.0x)
+    - nDCG_eff: 0.2464 (chiến lược chọn: 0.2871)
+    - Recall@10: 0.2782 (chiến lược chọn: 0.3001)
+  Điểm mạnh đo được so với chiến lược chọn:
+    + chunk vượt giới hạn token embedding: 0.0% (chiến lược chọn: 2.65%)
+  Lý thuyết (không phải số đo): Không chẻ từ nhưng cắt ngang câu; reranker/cross-encoder mất ngữ cảnh cú pháp.
+
+[3_Sentence_Boundary]  params: max_words=140 overlap=1 câu
+  KẾT LUẬN: KHÔNG CHỌN (kém 0.1546 điểm composite)
+  Đo được: quality=98.56 | đứt đầu=0.0% | đứt đuôi=0.0% | đại từ mồ côi raw/unresolved=3.15%/3.15% | tiêu đề mồ côi=1.96% | quá ngắn=0.14% | >512 token=0.03% | nở=1.48x | tài liệu bị chia=28.9%
+  Retrieval: nDCG_eff=0.2671 (single=0.1794 hist=0.2486 rand=0.1609) | semantic_gain=+0.0877
+           : Recall@10 single/history=0.2518/0.3441 | MRR@10 single/history=0.2182/0.3231 | vocab_ok=True
+  Điểm yếu đo được so với chiến lược chọn:
+    - đại từ mồ côi chưa được giải quyết: 3.15% (chiến lược chọn: 0.0%)
+    - nDCG_eff: 0.2671 (chiến lược chọn: 0.2871)
+  Điểm mạnh đo được so với chiến lược chọn:
+    + chunk vượt giới hạn token embedding: 0.03% (chiến lược chọn: 2.65%)
+  Lý thuyết (không phải số đo): Giữ nguyên câu nhưng vẫn chia nhỏ cả tài liệu vốn đã ngắn và không xử lý đại từ mồ côi.
+
+[4_Recursive_Markdown]  params: max_chars=650 min_chars=150
+  KẾT LUẬN: KHÔNG CHỌN (kém 0.3320 điểm composite)
+  Đo được: quality=97.38 | đứt đầu=1.89% | đứt đuôi=1.89% | đại từ mồ côi raw/unresolved=3.65%/3.65% | tiêu đề mồ côi=2.8% | quá ngắn=0.24% | >512 token=0.0% | nở=1.7x | tài liệu bị chia=37.7%
+  Retrieval: nDCG_eff=0.2384 (single=0.1547 hist=0.2221 rand=0.1384) | semantic_gain=+0.0837
+           : Recall@10 single/history=0.2342/0.3555 | MRR@10 single/history=0.1775/0.2688 | vocab_ok=True
+  Điểm yếu đo được so với chiến lược chọn:
+    - đại từ mồ côi chưa được giải quyết: 3.65% (chiến lược chọn: 0.0%)
+    - tiêu đề mồ côi cuối chunk: 2.8% (chiến lược chọn: 0.0%)
+    - chi phí index: nở 1.7x chunk/tài liệu (chiến lược chọn: 1.0x)
+    - nDCG_eff: 0.2384 (chiến lược chọn: 0.2871)
+  Điểm mạnh đo được so với chiến lược chọn:
+    + chunk vượt giới hạn token embedding: 0.0% (chiến lược chọn: 2.65%)
+  Lý thuyết (không phải số đo): Tôn trọng đoạn/dòng/bullet, nhưng chunk sau của tài liệu dài mất tên thực thể (bắt đầu bằng 'It', 'This drone'...).
+
+[5_Semantic_Context_Injected]  params: no_chunk<=800 max_chars=650 prefix từ chunk 2
+  KẾT LUẬN: KHÔNG CHỌN (kém 0.6492 điểm composite)
+  Đo được: quality=98.18 | đứt đầu=1.89% | đứt đuôi=1.89% | đại từ mồ côi raw/unresolved=3.63%/0.0% | tiêu đề mồ côi=2.85% | quá ngắn=0.24% | >512 token=0.0% | nở=1.67x | tài liệu bị chia=34.8%
+  Retrieval: nDCG_eff=0.1985 (single=0.1333 hist=0.2059 rand=0.1407) | semantic_gain=+0.0652
+           : Recall@10 single/history=0.2070/0.3125 | MRR@10 single/history=0.1539/0.2681 | vocab_ok=True
+  Điểm yếu đo được so với chiến lược chọn:
+    - tiêu đề mồ côi cuối chunk: 2.85% (chiến lược chọn: 0.0%)
+    - chi phí index: nở 1.67x chunk/tài liệu (chiến lược chọn: 1.0x)
+    - nDCG_eff: 0.1985 (chiến lược chọn: 0.2871)
+    - Recall@10: 0.2597 (chiến lược chọn: 0.3001)
+  Điểm mạnh đo được so với chiến lược chọn:
+    + chunk vượt giới hạn token embedding: 0.0% (chiến lược chọn: 2.65%)
+  Lý thuyết (không phải số đo): Giữ nguyên tài liệu ngắn, chia tài liệu dài theo cấu trúc và gắn chủ đề/tiêu đề vào chunk sau. Rủi ro: prefix lặp lại làm các chunk cùng tài liệu giống nhau (near-duplicate) và tăng độ dài.
+
+[6_Whole_Document]  params: không chia
+  KẾT LUẬN: ĐƯỢC CHỌN (composite cao nhất)
+  Đo được: quality=98.22 | đứt đầu=0.0% | đứt đuôi=0.0% | đại từ mồ côi raw/unresolved=0.0%/0.0% | tiêu đề mồ côi=0.0% | quá ngắn=0.0% | >512 token=2.65% | nở=1.0x | tài liệu bị chia=0.0%
+  Retrieval: nDCG_eff=0.2871 (single=0.1747 hist=0.2514 rand=0.1390) | semantic_gain=+0.1124
+           : Recall@10 single/history=0.2526/0.3476 | MRR@10 single/history=0.2114/0.3268 | vocab_ok=True
+  Lý thuyết (không phải số đo): Không chia: tốt cho tài liệu ngắn, nhưng tài liệu dài bị embedding cắt cụt (truncation) và BM25 bị loãng do độ dài.
+
+[7_Parent_Child]  params: child=60 từ
+  KẾT LUẬN: KHÔNG CHỌN (kém 0.3998 điểm composite)
+  Đo được: quality=96.81 | đứt đầu=0.04% | đứt đuôi=0.0% | đại từ mồ côi raw/unresolved=6.35%/6.35% | tiêu đề mồ côi=3.0% | quá ngắn=1.93% | >512 token=0.02% | nở=2.6x | tài liệu bị chia=55.4%
+  Retrieval: nDCG_eff=0.2314 (single=0.1530 hist=0.2147 rand=0.1363) | semantic_gain=+0.0784
+           : Recall@10 single/history=0.2544/0.3336 | MRR@10 single/history=0.1556/0.2519 | vocab_ok=True
+  Điểm yếu đo được so với chiến lược chọn:
+    - đại từ mồ côi chưa được giải quyết: 6.35% (chiến lược chọn: 0.0%)
+    - tiêu đề mồ côi cuối chunk: 3.0% (chiến lược chọn: 0.0%)
+    - chi phí index: nở 2.6x chunk/tài liệu (chiến lược chọn: 1.0x)
+    - nDCG_eff: 0.2314 (chiến lược chọn: 0.2871)
+  Điểm mạnh đo được so với chiến lược chọn:
+    + chunk vượt giới hạn token embedding: 0.02% (chiến lược chọn: 2.65%)
+  Lý thuyết (không phải số đo): Chunk con nhỏ (~60 từ) giúp truy hồi chính xác, nhưng nếu không trả về chunk cha thì câu trả lời thiếu ngữ cảnh; chunk con thường quá ngắn và đầy đại từ mồ côi.
+
+[8_Sentence_Window]  params: window=4 stride=2
+  KẾT LUẬN: KHÔNG CHỌN (kém 0.4249 điểm composite)
+  Đo được: quality=93.27 | đứt đầu=0.02% | đứt đuôi=0.0% | đại từ mồ côi raw/unresolved=5.36%/5.36% | tiêu đề mồ côi=15.57% | quá ngắn=10.12% | >512 token=0.02% | nở=3.24x | tài liệu bị chia=43.95%
+  Retrieval: nDCG_eff=0.2354 (single=0.1506 hist=0.2100 rand=0.1252) | semantic_gain=+0.0848
+           : Recall@10 single/history=0.2561/0.3274 | MRR@10 single/history=0.1720/0.2668 | vocab_ok=True
+  Điểm yếu đo được so với chiến lược chọn:
+    - đại từ mồ côi chưa được giải quyết: 5.36% (chiến lược chọn: 0.0%)
+    - tiêu đề mồ côi cuối chunk: 15.57% (chiến lược chọn: 0.0%)
+    - chunk quá ngắn (<80 ký tự): 10.12% (chiến lược chọn: 0.0%)
+    - điểm chất lượng ngữ nghĩa TB: 93.27 (chiến lược chọn: 98.22)
+    - chi phí index: nở 3.24x chunk/tài liệu (chiến lược chọn: 1.0x)
+    - nDCG_eff: 0.2354 (chiến lược chọn: 0.2871)
+  Điểm mạnh đo được so với chiến lược chọn:
+    + chunk vượt giới hạn token embedding: 0.02% (chiến lược chọn: 2.65%)
+  Lý thuyết (không phải số đo): Cửa sổ N câu cố định, dễ cài đặt, nhưng bỏ qua ranh giới đoạn/chủ đề.
+
+[9_TextTiling_Semantic]  params: block=3 k=0.5 max=900
+  KẾT LUẬN: KHÔNG CHỌN (kém 0.4959 điểm composite)
+  Đo được: quality=93.29 | đứt đầu=0.05% | đứt đuôi=0.0% | đại từ mồ côi raw/unresolved=3.77%/3.77% | tiêu đề mồ côi=12.65% | quá ngắn=14.0% | >512 token=0.02% | nở=2.11x | tài liệu bị chia=35.0%
+  Retrieval: nDCG_eff=0.2272 (single=0.1386 hist=0.2199 rand=0.1313) | semantic_gain=+0.0886
+           : Recall@10 single/history=0.2289/0.3266 | MRR@10 single/history=0.1520/0.2725 | vocab_ok=True
+  Điểm yếu đo được so với chiến lược chọn:
+    - đại từ mồ côi chưa được giải quyết: 3.77% (chiến lược chọn: 0.0%)
+    - tiêu đề mồ côi cuối chunk: 12.65% (chiến lược chọn: 0.0%)
+    - chunk quá ngắn (<80 ký tự): 14.0% (chiến lược chọn: 0.0%)
+    - điểm chất lượng ngữ nghĩa TB: 93.29 (chiến lược chọn: 98.22)
+    - chi phí index: nở 2.11x chunk/tài liệu (chiến lược chọn: 1.0x)
+    - nDCG_eff: 0.2272 (chiến lược chọn: 0.2871)
+    - Recall@10: 0.2777 (chiến lược chọn: 0.3001)
+  Điểm mạnh đo được so với chiến lược chọn:
+    + chunk vượt giới hạn token embedding: 0.02% (chiến lược chọn: 2.65%)
+  Lý thuyết (không phải số đo): Cắt tại điểm đổi chủ đề (độ tương đồng từ vựng giữa hai khối câu giảm). Nhạy với nhiễu ở văn bản ngắn; cần ngưỡng min câu/đoạn.
+
+5. QUYẾT ĐỊNH
+--------------------------------------------------------------------------------
+-> Chiến lược được chọn cho domain 'drones': 6_Whole_Document (không chia)
+-> Á quân: 3_Sentence_Boundary (composite 0.7788, kém 0.1546)
+-> Lưu ý: giả thuyết ban đầu (5_Semantic_Context_Injected) xếp hạng #20, dữ liệu KHÔNG ủng hộ nó là tối ưu cho domain này.
+
+Gợi ý hành động dựa trên số đo:
+- 3.0% tài liệu vượt ~512 token: bắt buộc chia hoặc dùng model embedding context dài.
+- Nhiều tài liệu tự thân mở đầu bằng đại từ: cần context/tiêu đề ngay cả khi không chia.
+- Mở file chunk_inspection_<domain>.md để đọc trực tiếp các chunk tệ nhất của từng chiến lược trước khi chốt.
+
+================================================================================
