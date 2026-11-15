@@ -111,9 +111,12 @@ Mỗi chunk bắt đầu với 100 điểm. Điểm sẽ bị trừ nếu phát 
 | `starts_mid_sentence` | -25 | Chunk bắt đầu ở giữa câu |
 | `ends_mid_sentence` | -20 | Chunk kết thúc ở giữa câu |
 | `dangling_pronoun_unresolved` | -30 | Chunk bắt đầu bằng đại từ như “it”, “this”, “they” nhưng không có prefix giải thích |
+| `dangling_pronoun_mitigated_by_prefix` | -8 | Chunk vẫn bắt đầu bằng đại từ nhưng đã có prefix chủ đề (từ 3 từ trở lên) bổ sung |
+| `starts_with_connector` | -10 | Chunk bắt đầu bằng từ nối (ví dụ “however”, “and”), tức là tiếp nối ý của chunk trước |
 | `trailing_heading_orphan` | -15 | Chunk kết thúc bằng một heading ngắn, không có nội dung đi kèm |
 | `undersized` | -25 | Chunk ngắn hơn 80 ký tự, trừ trường hợp whole document |
 | `over_embedding_token_limit` | -20 | Chunk vượt giới hạn 512 token theo ước lượng |
+| `oversized_chars` | -10 | Chunk dài hơn 1.500 ký tự nhưng chưa vượt 512 token (không cộng dồn với lỗi vượt token) |
 
 Công thức tính:
 
@@ -150,7 +153,7 @@ Khi nối lịch sử hội thoại vào query, câu truy vấn sẽ dài hơn. 
 
 Random Padded được dùng làm baseline kiểm soát vấn đề này.
 
-Ví dụ minh họa trong báo cáo:
+Ví dụ minh họa (câu hỏi chỉ để dễ hình dung; các con số nDCG là **trung bình của chiến lược Sentence Boundary trên 11 domain**, không phải điểm của riêng một câu hỏi):
 
 | Chế độ | Ví dụ query | nDCG |
 |---|---|---:|
@@ -306,7 +309,7 @@ Có thể thấy không có một phương pháp nào chiến thắng ở tất 
 Ba nhận xét chính:
 
 1. **Không có chiến lược vạn năng:** Có 7 cấu hình khác nhau chiến thắng trên 11 domain.
-2. **Tham số mặc định chưa tối ưu:** 4/11 domain chiến thắng nhờ các biến thể đã tinh chỉnh tham số.
+2. **Tham số mặc định chưa tối ưu:** 6/11 domain chiến thắng nhờ các biến thể đã tinh chỉnh tham số (Economics, Law, Medical Sciences, Politics, Psychology, Robotics). 5/11 domain còn lại thắng bằng chiến lược gốc (Biology, Drones, Earth Science, Hardware, Sustainable Living).
 3. **Adaptive Hybrid chưa đạt kỳ vọng:** `5e_Adaptive_Hybrid` không chiến thắng domain nào trong phiên bản thực nghiệm v3.
 
 ### 5.4. Kết quả kiểm soát Length Bias
@@ -438,7 +441,7 @@ Có 7 cấu hình khác nhau chiến thắng trên 11 domain. Vì vậy, việc 
 nDCG@10 tăng từ 0.2554 lên 0.3545 khi sử dụng History. Sau khi đối chiếu với Random Padded, Δ Semantic đạt +0.1215. Đây là căn cứ để phát triển Query Rewriter.
 
 **3. Tham số mặc định chưa tối ưu.**  
-Có 4/11 domain đạt kết quả tốt nhất với các biến thể đã tinh chỉnh. Do đó, hệ thống nên có khả năng điều chỉnh tham số theo đặc điểm domain.
+Có 6/11 domain đạt kết quả tốt nhất với các biến thể đã tinh chỉnh. Do đó, hệ thống nên có khả năng điều chỉnh tham số theo đặc điểm domain.
 
 ### 8.2. Hướng lựa chọn chunking
 
