@@ -1,0 +1,43 @@
+================================================================================
+LOG HEALTH & CHẤT LƯỢNG DỮ LIỆU — RETECO TRACK 2 — DOMAIN: ROBOTICS
+Thời điểm: 2026-11-21T09:07:37 | pha: integrity, content, conversation, gold, link, retrieval, splits
+================================================================================
+
+HEALTH TỔNG: 78.5  [YELLOW]
+--------------------------------------------------------------------------------
+  integrity        99.1  [green]  (trọng số 0.2)
+  content          28.6  [red]  (trọng số 0.25)
+  conversation     95.0  [green]  (trọng số 0.15)
+  gold             92.8  [green]  (trọng số 0.25)
+  link             93.6  [green]  (trọng số 0.15)
+
+CHI TIẾT ĐIỂM TRỪ (value × weight, cap 60/mục):
+--------------------------------------------------------------------------------
+  [content     ] % trùng chính xác                                            value=34.75     x1.0  = -34.75
+  [content     ] % doc quá ngắn                                               value=39.15     x0.5  = -19.57
+  [content     ] % nghi không phải tiếng Anh                                  value=16.41     x0.5  = -8.21
+  [gold        ] % gold có lỗi nội dung nghiêm trọng                          value=14.49     x0.5  = -7.25
+  [content     ] % ký hiệu lạ/URL nặng                                        value=15.47     x0.4  = -6.19
+  [link        ] % turn gold không chia sẻ từ nào với query                   value=4.0       x1.5  = -6.0
+  [conversation] % hội thoại có tham chiếu lơ lửng ở turn đầu                 value=5.0       x1    = -5.0
+  [content     ] % lặp bất thường                                             value=2.26      x0.5  = -1.13
+  [content     ] % gần trùng (ngoài trùng chính xác)                          value=1.54      x0.7  = -1.08
+  [integrity   ] % doc có mojibake                                            value=0.31      x2    = -0.62
+  [content     ] % boilerplate                                                value=1.4       x0.3  = -0.42
+  [link        ] % OOV trung bình của query                                   value=1.18      x0.3  = -0.35
+  [integrity   ] % doc có ký tự điều khiển                                    value=0.12      x2    = -0.24
+  [content     ] % chứa PII (email/phone)                                     value=0.44      x0.1  = -0.04
+  [content     ] % HTML sót                                                   value=0.07      x0.4  = -0.03
+
+KHUYẾN NGHỊ:
+--------------------------------------------------------------------------------
+  [MEDIUM] 0.31% doc có dấu hiệu lỗi encoding.
+  [MEDIUM] Rỗng 0.0% / quá ngắn 39.15%.
+  [MEDIUM] Trùng chính xác 34.75%.
+  [MEDIUM] Gần trùng 1.54% (MinHash).
+  [LOW   ] 16.41% doc nghi không phải tiếng Anh.
+  [HIGH  ] 67.27% turn sau turn đầu phụ thuộc ngữ cảnh -> cần query rewriter.
+  [MEDIUM] 1 hội thoại có đại từ/liên từ ở turn đầu.
+  [MEDIUM] 14.49% gold doc có lỗi nội dung nghiêm trọng.
+
+================================================================================

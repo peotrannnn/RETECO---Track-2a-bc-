@@ -1,0 +1,38 @@
+================================================================================
+LOG HEALTH & CHẤT LƯỢNG DỮ LIỆU — RETECO TRACK 2 — DOMAIN: MEDICALSCIENCES
+Thời điểm: 2026-11-21T09:06:40 | pha: integrity, content, conversation, gold, link, retrieval, splits
+================================================================================
+
+HEALTH TỔNG: 93.3  [GREEN]
+--------------------------------------------------------------------------------
+  integrity        98.6  [green]  (trọng số 0.2)
+  content          95.0  [green]  (trọng số 0.25)
+  conversation     69.2  [red]  (trọng số 0.15)
+  gold            100.0  [green]  (trọng số 0.25)
+  link             96.5  [green]  (trọng số 0.15)
+
+CHI TIẾT ĐIỂM TRỪ (value × weight, cap 60/mục):
+--------------------------------------------------------------------------------
+  [conversation] % hội thoại có tham chiếu lơ lửng ở turn đầu                 value=30.77     x1    = -30.77
+  [link        ] % turn gold không chia sẻ từ nào với query                   value=2.27      x1.5  = -3.41
+  [content     ] % nghi không phải tiếng Anh                                  value=3.68      x0.5  = -1.84
+  [integrity   ] % doc có mojibake                                            value=0.69      x2    = -1.38
+  [content     ] % doc quá ngắn                                               value=1.85      x0.5  = -0.93
+  [content     ] % lặp bất thường                                             value=1.8       x0.5  = -0.9
+  [content     ] % boilerplate                                                value=1.61      x0.3  = -0.48
+  [content     ] % gần trùng (ngoài trùng chính xác)                          value=0.45      x0.7  = -0.32
+  [content     ] % ký hiệu lạ/URL nặng                                        value=0.62      x0.4  = -0.25
+  [content     ] % chứa PII (email/phone)                                     value=2.33      x0.1  = -0.23
+  [link        ] % OOV trung bình của query                                   value=0.17      x0.3  = -0.05
+  [content     ] % HTML sót                                                   value=0.06      x0.4  = -0.02
+
+KHUYẾN NGHỊ:
+--------------------------------------------------------------------------------
+  [MEDIUM] 0.69% doc có dấu hiệu lỗi encoding.
+  [MEDIUM] Rỗng 0.0% / quá ngắn 1.85%.
+  [LOW   ] 3.68% doc nghi không phải tiếng Anh.
+  [LOW   ] Có email/SĐT trong corpus -> cân nhắc ẩn danh.
+  [HIGH  ] 70.97% turn sau turn đầu phụ thuộc ngữ cảnh -> cần query rewriter.
+  [MEDIUM] 4 hội thoại có đại từ/liên từ ở turn đầu.
+
+================================================================================

@@ -1,0 +1,43 @@
+================================================================================
+LOG HEALTH & CHẤT LƯỢNG DỮ LIỆU — RETECO TRACK 2 — DOMAIN: POLITICS
+Thời điểm: 2026-11-21T09:07:08 | pha: integrity, content, conversation, gold, link, retrieval, splits
+================================================================================
+
+HEALTH TỔNG: 91.9  [GREEN]
+--------------------------------------------------------------------------------
+  integrity        95.5  [green]  (trọng số 0.2)
+  content          94.8  [green]  (trọng số 0.25)
+  conversation     92.3  [green]  (trọng số 0.15)
+  gold             82.7  [yellow]  (trọng số 0.25)
+  link             97.2  [green]  (trọng số 0.15)
+
+CHI TIẾT ĐIỂM TRỪ (value × weight, cap 60/mục):
+--------------------------------------------------------------------------------
+  [gold        ] % turn gold inline ≠ qrels                                   value=5.56      x2    = -11.12
+  [conversation] % hội thoại có tham chiếu lơ lửng ở turn đầu                 value=7.69      x1    = -7.69
+  [gold        ] % cặp gold mồ côi (doc không có trong corpus)                value=2.07      x3    = -6.21
+  [integrity   ] % doc có mojibake                                            value=1.39      x2    = -2.78
+  [link        ] % turn gold không chia sẻ từ nào với query                   value=1.85      x1.5  = -2.78
+  [integrity   ] % doc có ký tự điều khiển                                    value=0.87      x2    = -1.74
+  [content     ] % nghi không phải tiếng Anh                                  value=3.42      x0.5  = -1.71
+  [content     ] % boilerplate                                                value=2.9       x0.3  = -0.87
+  [content     ] % doc quá ngắn                                               value=1.5       x0.5  = -0.75
+  [content     ] % lặp bất thường                                             value=1.33      x0.5  = -0.67
+  [content     ] % ký hiệu lạ/URL nặng                                        value=1.56      x0.4  = -0.62
+  [content     ] % gần trùng (ngoài trùng chính xác)                          value=0.35      x0.7  = -0.24
+  [content     ] % chứa PII (email/phone)                                     value=2.11      x0.1  = -0.21
+  [content     ] % HTML sót                                                   value=0.28      x0.4  = -0.11
+  [link        ] % OOV trung bình của query                                   value=0.14      x0.3  = -0.04
+
+KHUYẾN NGHỊ:
+--------------------------------------------------------------------------------
+  [MEDIUM] 1.39% doc có dấu hiệu lỗi encoding.
+  [MEDIUM] Rỗng 0.0% / quá ngắn 1.5%.
+  [LOW   ] 3.42% doc nghi không phải tiếng Anh.
+  [LOW   ] Có email/SĐT trong corpus -> cân nhắc ẩn danh.
+  [HIGH  ] 63.41% turn sau turn đầu phụ thuộc ngữ cảnh -> cần query rewriter.
+  [MEDIUM] 1 hội thoại có đại từ/liên từ ở turn đầu.
+  [HIGH  ] 3 cặp gold trỏ tới doc KHÔNG có trong corpus.
+  [HIGH  ] 3 turn có gold inline KHÁC qrels.
+
+================================================================================

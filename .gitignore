@@ -14,3 +14,14 @@ wheels/
 reteco_data
 baselines_official
 runs
+*.jsonl
+
+# EDA data quality: bỏ file nặng / sinh lại được
+reports/**/.cache/
+reports/**/dq_fix_list_*.csv
+reports/**/dq_metrics_*.json
+reports/**/dq_inspection_*.md
+reports/**/dq_report.html
+
+# Repo PUBLIC: bỏ comment dòng dưới (báo cáo mục 11 trích nguyên văn doc, có email/SĐT)
+# reports/**/dq_report_*.md

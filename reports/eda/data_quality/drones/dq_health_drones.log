@@ -1,0 +1,36 @@
+================================================================================
+LOG HEALTH & CHẤT LƯỢNG DỮ LIỆU — RETECO TRACK 2 — DOMAIN: DRONES
+Thời điểm: 2026-11-21T09:05:21 | pha: integrity, content, conversation, gold, link, retrieval, splits
+================================================================================
+
+HEALTH TỔNG: 97.0  [GREEN]
+--------------------------------------------------------------------------------
+  integrity        99.3  [green]  (trọng số 0.2)
+  content          93.9  [green]  (trọng số 0.25)
+  conversation     90.9  [green]  (trọng số 0.15)
+  gold            100.0  [green]  (trọng số 0.25)
+  link             99.9  [green]  (trọng số 0.15)
+
+CHI TIẾT ĐIỂM TRỪ (value × weight, cap 60/mục):
+--------------------------------------------------------------------------------
+  [conversation] % hội thoại có tham chiếu lơ lửng ở turn đầu                 value=9.09      x1    = -9.09
+  [content     ] % nghi không phải tiếng Anh                                  value=6.72      x0.5  = -3.36
+  [content     ] % doc quá ngắn                                               value=2.03      x0.5  = -1.01
+  [integrity   ] % doc có mojibake                                            value=0.35      x2    = -0.7
+  [content     ] % boilerplate                                                value=2.19      x0.3  = -0.66
+  [content     ] % gần trùng (ngoài trùng chính xác)                          value=0.58      x0.7  = -0.41
+  [content     ] % lặp bất thường                                             value=0.5       x0.5  = -0.25
+  [content     ] % ký hiệu lạ/URL nặng                                        value=0.63      x0.4  = -0.25
+  [link        ] % OOV trung bình của query                                   value=0.46      x0.3  = -0.14
+  [content     ] % chứa PII (email/phone)                                     value=0.84      x0.1  = -0.08
+  [content     ] % HTML sót                                                   value=0.07      x0.4  = -0.03
+
+KHUYẾN NGHỊ:
+--------------------------------------------------------------------------------
+  [MEDIUM] 0.35% doc có dấu hiệu lỗi encoding.
+  [MEDIUM] Rỗng 0.0% / quá ngắn 2.03%.
+  [LOW   ] 6.72% doc nghi không phải tiếng Anh.
+  [HIGH  ] 59.26% turn sau turn đầu phụ thuộc ngữ cảnh -> cần query rewriter.
+  [MEDIUM] 1 hội thoại có đại từ/liên từ ở turn đầu.
+
+================================================================================
